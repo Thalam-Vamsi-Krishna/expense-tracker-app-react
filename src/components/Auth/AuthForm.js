@@ -25,20 +25,21 @@ const AuthForm = () => {
     event.preventDefault();
     const enteredEmail = emailInputRef.current.value;
     const enteredPassword = passwordInputRef.current.value;
-    const checkPassword = checkPasswordInputRef.current.value;
+    const checkPassword = checkPasswordInputRef.current?.value;
     setIsLoading(true);
     let url;
-    if (isLogin && enteredPassword !== checkPassword) {
+    if (!isLogin && enteredPassword !== checkPassword) {
       alert("Passwords did not match");
       setIsLoading(false);
       return;
     }
-    if (isLogin && enteredPassword === checkPassword) {
+    if (isLogin) {
       url =
-        "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyCHRJDLjRV-TUbvJurRq8MLKiqBwWn4sfc";
-    } else {
+        "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyDvtlwqxzVKhuhWBcSJE6AmKab0x5J45eA";
+    }
+    if (!isLogin && enteredPassword === checkPassword) {
       url =
-        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyCHRJDLjRV-TUbvJurRq8MLKiqBwWn4sfc";
+        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyDvtlwqxzVKhuhWBcSJE6AmKab0x5J45eA";
     }
     fetch(url, {
       method: "POST",
@@ -100,15 +101,17 @@ const AuthForm = () => {
                 style={{ width: "100%", marginTop: "15px" }}
               />
             </Form.Group>
-            <Form.Group controlId="formBasicPassword">
-              <Form.Control
-                type="password"
-                placeholder="Confirm Password"
-                ref={checkPasswordInputRef}
-                required
-                style={{ width: "100%", marginTop: "15px" }}
-              />
-            </Form.Group>
+            {!isLogin && (
+              <Form.Group controlId="formBasicPassword">
+                <Form.Control
+                  type="password"
+                  placeholder="Confirm Password"
+                  ref={checkPasswordInputRef}
+                  required
+                  style={{ width: "100%", marginTop: "15px" }}
+                />
+              </Form.Group>
+            )}
             {!isLoading ? (
               <Button
                 variant="primary"
@@ -128,14 +131,22 @@ const AuthForm = () => {
           {isLogin ? (
             <>
               {sign_up_text}{" "}
-              <Button variant="link" onClick={switchAuthModeHandler}>
+              <Button
+                variant="link"
+                style={{ padding: "0", marginBottom: "5px" }}
+                onClick={switchAuthModeHandler}
+              >
                 Sign Up
               </Button>
             </>
           ) : (
             <>
               {login_text}{" "}
-              <Button variant="link" onClick={switchAuthModeHandler}>
+              <Button
+                variant="link"
+                style={{ padding: "0", marginBottom: "5px" }}
+                onClick={switchAuthModeHandler}
+              >
                 Login
               </Button>
             </>

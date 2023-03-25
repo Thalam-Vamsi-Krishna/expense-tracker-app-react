@@ -24,7 +24,7 @@ export const AuthContextProvider = (props) => {
       clearTimeout(timer);
       timer = setTimeout(() => {
         logoutHandler();
-      }, 60 * 1000);
+      }, 5 * 60 * 1000);
     };
     const events = [
       "mousedown",
