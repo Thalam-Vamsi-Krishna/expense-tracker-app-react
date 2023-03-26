@@ -4,6 +4,7 @@ import AuthForm from "./components/Auth/AuthForm";
 import AuthContext from "./components/Store/AuthContext";
 import Home from "./components/Pages/Home";
 import Profile from "./components/Pages/Profile";
+import Verification from "./components/Auth/Verification";
 
 function App() {
   const authCtx = useContext(AuthContext);
@@ -13,6 +14,7 @@ function App() {
         <Route path="/" element={<AuthForm />} />
         {authCtx.isLoggedIn && (
           <>
+            <Route path="/verification" element={<Verification />}/>
             <Route path="/home" element={<Home />} />
             <Route path="/profile" element={<Profile />} />
           </>

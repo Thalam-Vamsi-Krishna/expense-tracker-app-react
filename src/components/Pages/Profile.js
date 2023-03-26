@@ -142,11 +142,7 @@ const Profile = () => {
               value={profileUrl}
             />
           </Form.Group>
-          <Button
-            variant="secondary"
-            type="submit"
-            style={{ marginTop: "15px" }}
-          >
+          <Button variant="success" type="submit" style={{ marginTop: "15px" }}>
             Update
           </Button>
         </Form>

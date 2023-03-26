@@ -68,7 +68,7 @@ const AuthForm = () => {
       })
       .then((data) => {
         authCtx.login(data.idToken);
-        navigate("/home");
+        navigate("/verification");
       })
       .catch((err) => {
         alert(err.message);
