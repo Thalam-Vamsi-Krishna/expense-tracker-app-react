@@ -42,7 +42,7 @@ const Verification = () => {
         }
       })
       .then((data) => {
-        if (data.email == enteredEmail) {
+        if (data.email === enteredEmail) {
           navigate("/home");
         } else {
           alert("Email Verification Failed !");

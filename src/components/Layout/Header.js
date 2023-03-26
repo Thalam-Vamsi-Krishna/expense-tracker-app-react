@@ -40,8 +40,8 @@ const Header = () => {
             backgroundColor: "yellow",
           }}
         >
-          Your Profile is Incomplete.
-          <NavLink to="/profile">Complete Now</NavLink>
+          You can update your
+          <NavLink to="/profile"> profile here</NavLink>
         </div>
       )}
     </Fragment>

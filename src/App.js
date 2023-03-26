@@ -1,11 +1,11 @@
-import { Fragment, useContext } from "react";
+import { Fragment, useContext, useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import AuthForm from "./components/Auth/AuthForm";
 import AuthContext from "./components/Store/AuthContext";
-import Home from "./components/Pages/Home";
-import Profile from "./components/Pages/Profile";
 import Verification from "./components/Auth/Verification";
 import Reset from "./components/Auth/ResetPassword";
+import Home from "./components/Pages/Home";
+import Profile from "./components/Pages/Profile";
 
 function App() {
   const authCtx = useContext(AuthContext);
