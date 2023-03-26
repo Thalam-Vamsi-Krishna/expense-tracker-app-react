@@ -1,25 +1,27 @@
-import { useState, useRef, useContext } from "react";
+import { useState, useRef } from "react";
 import { Form, Container, Card, Button, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import AuthContext from "../Store/AuthContext";
 
-const Verification = () => {
+const Reset = () => {
   const navigate = useNavigate();
   const emailInputRef = useRef();
-  const authCtx = useContext(AuthContext);
+  const passwordInputRef = useRef();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
-  const verificationHandler = (event) => {
+  const [password, setPassword] = useState("");
+
+  const resetHandler = (event) => {
     event.preventDefault();
-    const enteredEmail = emailInputRef.current.value;
     setIsLoading(true);
+    const urlParams = new URLSearchParams(window.location.search);
+    const oobCode = urlParams.get("oobCode");
     fetch(
       "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=AIzaSyDvtlwqxzVKhuhWBcSJE6AmKab0x5J45eA",
       {
         method: "POST",
         body: JSON.stringify({
-          requestType: "VERIFY_EMAIL",
-          idToken: authCtx.token,
+          requestType: "PASSWORD_RESET",
+          email: email,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -30,10 +32,11 @@ const Verification = () => {
         setIsLoading(false);
         if (res.ok) {
           setEmail("");
+          setPassword("");
           return res.json();
         } else {
           return res.json().then((data) => {
-            let errorMessage;
+            let errorMessage = "Password Reset Failed";
             if (data && data.error && data.error.message) {
               errorMessage = data.error.message;
             }
@@ -42,28 +45,29 @@ const Verification = () => {
         }
       })
       .then((data) => {
-        if (data.email == enteredEmail) {
-          navigate("/home");
-        } else {
-          alert("Email Verification Failed !");
-          navigate("/");
-        }
+        navigate("/auth");
       })
       .catch((err) => {
         alert(err.message);
       });
   };
+
   const emailInputChangeHandler = () => {
     setEmail(emailInputRef.current.value);
   };
+
+  const passwordInputChangeHandler = () => {
+    setPassword(passwordInputRef.current.value);
+  };
+
   return (
     <Container className="d-flex justify-content-center my-5">
       <Card>
         <Card.Title style={{ textAlign: "center", marginTop: "15px" }}>
-          Verify It's You
+          Reset Password
         </Card.Title>
         <Card.Body>
-          <Form onSubmit={verificationHandler}>
+          <Form onSubmit={resetHandler}>
             <Form.Group controlId="formBasicEmail">
               <Form.Control
                 type="email"
@@ -75,17 +79,28 @@ const Verification = () => {
                 value={email}
               />
             </Form.Group>
+            <Form.Group controlId="formBasicPassword">
+              <Form.Control
+                type="password"
+                placeholder="Enter your new password here "
+                ref={passwordInputRef}
+                required
+                style={{ marginTop: "15px", width: "100%" }}
+                onChange={passwordInputChangeHandler}
+                value={password}
+              />
+            </Form.Group>
             {!isLoading ? (
               <Button
                 variant="primary"
                 type="submit"
                 style={{ marginTop: "15px" }}
               >
-                Verify
+                Reset
               </Button>
             ) : (
               <Button variant="success" style={{ marginTop: "15px" }}>
-                <Spinner animation="border" size="sm" /> Verifying...
+                <Spinner animation="border" size="sm" /> Updating...
               </Button>
             )}
           </Form>
@@ -94,4 +109,4 @@ const Verification = () => {
     </Container>
   );
 };
-export default Verification;
+export default Reset;

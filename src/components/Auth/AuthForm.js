@@ -21,6 +21,10 @@ const AuthForm = () => {
     setIsLogin((prevState) => !prevState);
   };
 
+  const forgetPasswordHandler = () => {
+    navigate("/forget");
+  };
+
   const submitHandler = (event) => {
     event.preventDefault();
     const enteredEmail = emailInputRef.current.value;
@@ -122,7 +126,13 @@ const AuthForm = () => {
               </Button>
             ) : (
               <Button variant="success" style={{ marginTop: "15px" }}>
-                <Spinner animation="border" size="sm" /> Sending Request...
+                <Spinner animation="border" size="sm" />{" "}
+                {isLogin ? "Logging in" : "Signing up"}
+              </Button>
+            )}
+            {isLogin && (
+              <Button variant="link" onClick={forgetPasswordHandler}>
+                Forget Password ?
               </Button>
             )}
           </Form>
