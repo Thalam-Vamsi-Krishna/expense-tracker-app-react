@@ -5,16 +5,12 @@ import { useNavigate } from "react-router-dom";
 const Reset = () => {
   const navigate = useNavigate();
   const emailInputRef = useRef();
-  const passwordInputRef = useRef();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
 
   const resetHandler = (event) => {
     event.preventDefault();
     setIsLoading(true);
-    const urlParams = new URLSearchParams(window.location.search);
-    const oobCode = urlParams.get("oobCode");
     fetch(
       "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=AIzaSyDvtlwqxzVKhuhWBcSJE6AmKab0x5J45eA",
       {
@@ -32,7 +28,6 @@ const Reset = () => {
         setIsLoading(false);
         if (res.ok) {
           setEmail("");
-          setPassword("");
           return res.json();
         } else {
           return res.json().then((data) => {
@@ -56,10 +51,6 @@ const Reset = () => {
     setEmail(emailInputRef.current.value);
   };
 
-  const passwordInputChangeHandler = () => {
-    setPassword(passwordInputRef.current.value);
-  };
-
   return (
     <Container className="d-flex justify-content-center my-5">
       <Card>
@@ -79,28 +70,17 @@ const Reset = () => {
                 value={email}
               />
             </Form.Group>
-            <Form.Group controlId="formBasicPassword">
-              <Form.Control
-                type="password"
-                placeholder="Enter your new password here "
-                ref={passwordInputRef}
-                required
-                style={{ marginTop: "15px", width: "100%" }}
-                onChange={passwordInputChangeHandler}
-                value={password}
-              />
-            </Form.Group>
             {!isLoading ? (
               <Button
                 variant="primary"
                 type="submit"
                 style={{ marginTop: "15px" }}
               >
-                Reset
+                Send Link
               </Button>
             ) : (
               <Button variant="success" style={{ marginTop: "15px" }}>
-                <Spinner animation="border" size="sm" /> Updating...
+                <Spinner animation="border" size="sm" /> Sending...
               </Button>
             )}
           </Form>
