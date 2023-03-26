@@ -33,15 +33,19 @@ const Verification = () => {
           return res.json();
         } else {
           return res.json().then((data) => {
-            if (data.email === enteredEmail) {
-              navigate("/home");
-            }
             let errorMessage = "Verification Failed !";
             if (data && data.error && data.error.message) {
               errorMessage = data.error.message;
             }
             throw new Error(errorMessage);
           });
+        }
+      })
+      .then((data) => {
+        if (data.email === enteredEmail) {
+          navigate("/home");
+        } else {
+          navigate("/");
         }
       })
       .catch((err) => {
