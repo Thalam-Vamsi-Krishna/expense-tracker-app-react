@@ -2,50 +2,40 @@ import React, { useEffect, useState } from "react";
 const AuthContext = React.createContext({
   token: "",
   isLoggedIn: false,
-  login: (token) => {},
+  login: (token, email) => {},
   logout: () => {},
 });
 
 export const AuthContextProvider = (props) => {
-  const initialToken = localStorage.getItem("token");
-  const [token, setToken] = useState(initialToken);
+  const [token, setToken] = useState("");
+  const [email, setEmail] = useState("");
+
   const userIsLoggedIn = !!token;
-  const loginHandler = (token) => {
+
+  useEffect(() => {
+    const initialToken = localStorage.getItem("token");
+    const initialEmail = localStorage.getItem("email");
+
+    if (initialToken && initialEmail) {
+      setToken(initialToken);
+      setEmail(initialEmail);
+    }
+  }, []);
+
+  const loginHandler = (token, email) => {
     setToken(token);
+    setEmail(email);
+    localStorage.setItem("email", email);
     localStorage.setItem("token", token);
   };
   const logoutHandler = () => {
     setToken(null);
+    localStorage.removeItem("email");
     localStorage.removeItem("token");
   };
-  useEffect(() => {
-    let timer;
-    const resetTimer = () => {
-      clearTimeout(timer);
-      timer = setTimeout(() => {
-        logoutHandler();
-      }, 5 * 60 * 1000);
-    };
-    const events = [
-      "mousedown",
-      "mousemove",
-      "keypress",
-      "scroll",
-      "touchstart",
-    ];
-    for (let event of events) {
-      window.addEventListener(event, resetTimer);
-    }
-    resetTimer();
-    return () => {
-      for (let event of events) {
-        window.removeEventListener(event, resetTimer);
-      }
-      clearTimeout(timer);
-    };
-  }, []);
   const ContextValue = {
     token: token,
+    email: email,
     isLoggedIn: userIsLoggedIn,
     login: loginHandler,
     logout: logoutHandler,

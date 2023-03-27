@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { Container, Form, Button } from "react-bootstrap";
+import AuthContext from "../Store/AuthContext";
 
-const ExpenseForm = ({ onAddExpense }) => {
+const ExpenseForm = () => {
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [desc, setDesc] = useState("");
+
+  const authCtx = useContext(AuthContext);
 
   const titleChangeHandler = (event) => {
     setTitle(event.target.value);
@@ -26,12 +29,39 @@ const ExpenseForm = ({ onAddExpense }) => {
       amount: amount,
       desc: desc,
     };
-    onAddExpense(expenseData);
+    addExpenseHandler(expenseData);
     setTitle("");
     setAmount("");
     setDesc("");
   };
 
+  const email = authCtx.email.replace(/[^a-zA-Z0-9]/g, "");
+
+  useEffect(() => {
+    fetch(
+      `https://expense-tracker-app-012-default-rtdb.asia-southeast1.firebasedatabase.app/expenses${email}.json`,
+      {
+        method: "POST",
+        body: JSON.stringify([]),
+      }
+    );
+  }, [email]);
+
+  const addExpenseHandler = async (expenseData) => {
+    const response = fetch(
+      `https://expense-tracker-app-012-default-rtdb.asia-southeast1.firebasedatabase.app/expenses${email}.json`,
+      {
+        method: "POST",
+        body: JSON.stringify(expenseData),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    if (!response.ok) {
+      throw new Error("Could not add expense.");
+    }
+  };
   return (
     <Container>
       <h3
