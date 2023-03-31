@@ -1,7 +1,11 @@
-import { useState, useRef, useContext } from "react";
+import { useState, useRef, Fragment } from "react";
 import { Card, Form, Button, Container, Spinner } from "react-bootstrap";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
-import AuthContext from "../Store/AuthContext";
+import Header from "../Layout/Header";
+import { authActions } from "../Store/AuthReducer";
+import { useDispatch } from "react-redux";
 
 const AuthForm = () => {
   const navigate = useNavigate();
@@ -12,7 +16,7 @@ const AuthForm = () => {
   const sign_up_text = "Don't have an account ?";
   const login_text = "Already have an account ?";
 
-  const authCtx = useContext(AuthContext);
+  const dispatch = useDispatch();
 
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +37,15 @@ const AuthForm = () => {
     setIsLoading(true);
     let url;
     if (!isLogin && enteredPassword !== checkPassword) {
-      alert("Passwords did not match");
+      toast.error("Passwords did not match", {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: true,
+        progress: undefined,
+      });
       setIsLoading(false);
       return;
     }
@@ -66,104 +78,135 @@ const AuthForm = () => {
             if (data && data.error && data.error.message) {
               errorMessage = data.error.message;
             }
-            throw new Error(errorMessage);
+            toast.error(errorMessage, {
+              position: "top-right",
+              autoClose: 2000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: false,
+              draggable: true,
+              progress: undefined,
+            });
           });
         }
       })
       .then((data) => {
-        authCtx.login(data.idToken, data.email);
-        navigate("/verification");
-      })
-      .catch((err) => {
-        alert(err.message);
+        const idToken = data.idToken;
+        const email = data.email;
+        dispatch(authActions.login({ idToken, email }));
+        if (isLogin) {
+          toast.success("Successfully LoggedIn", {
+            position: "top-right",
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: false,
+            draggable: true,
+            progress: undefined,
+          });
+        } else {
+          toast.success("Signed Up Successfully", {
+            position: "top-right",
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: false,
+            draggable: true,
+            progress: undefined,
+          });
+        }
+        navigate("/home");
       });
   };
 
   return (
-    <Container className="d-flex justify-content-center my-5">
-      <Card>
-        <Card.Title style={{ textAlign: "center", marginTop: "15px" }}>
-          {isLogin ? "Login" : "Sign Up"}
-        </Card.Title>
-        <Card.Body>
-          <Form onSubmit={submitHandler}>
-            <Form.Group controlId="formBasicEmail">
-              <Form.Control
-                type="email"
-                placeholder="Enter Email"
-                ref={emailInputRef}
-                required
-                style={{ width: "100%" }}
-              />
-            </Form.Group>
-            <Form.Group controlId="formBasicPassword">
-              <Form.Control
-                type="password"
-                placeholder="Enter Password"
-                ref={passwordInputRef}
-                required
-                style={{ width: "100%", marginTop: "15px" }}
-              />
-            </Form.Group>
-            {!isLogin && (
+    <Fragment>
+      <Header />
+      <Container className="d-flex justify-content-center my-5">
+        <Card>
+          <Card.Title style={{ textAlign: "center", marginTop: "15px" }}>
+            {isLogin ? "Login" : "Sign Up"}
+          </Card.Title>
+          <Card.Body>
+            <Form onSubmit={submitHandler}>
+              <Form.Group controlId="formBasicEmail">
+                <Form.Control
+                  type="email"
+                  placeholder="Enter Email"
+                  ref={emailInputRef}
+                  required
+                  style={{ width: "100%" }}
+                />
+              </Form.Group>
               <Form.Group controlId="formBasicPassword">
                 <Form.Control
                   type="password"
-                  placeholder="Confirm Password"
-                  ref={checkPasswordInputRef}
+                  placeholder="Enter Password"
+                  ref={passwordInputRef}
                   required
                   style={{ width: "100%", marginTop: "15px" }}
                 />
               </Form.Group>
-            )}
-            {!isLoading ? (
-              <Button
-                variant="primary"
-                type="submit"
-                style={{ marginTop: "15px" }}
-              >
-                {isLogin ? "Login" : "Sign Up"}
-              </Button>
+              {!isLogin && (
+                <Form.Group controlId="formBasicPassword">
+                  <Form.Control
+                    type="password"
+                    placeholder="Confirm Password"
+                    ref={checkPasswordInputRef}
+                    required
+                    style={{ width: "100%", marginTop: "15px" }}
+                  />
+                </Form.Group>
+              )}
+              {!isLoading ? (
+                <Button
+                  variant="primary"
+                  type="submit"
+                  style={{ marginTop: "15px" }}
+                >
+                  {isLogin ? "Login" : "Sign Up"}
+                </Button>
+              ) : (
+                <Button variant="success" style={{ marginTop: "15px" }}>
+                  <Spinner animation="border" size="sm" />{" "}
+                  {isLogin ? "Logging in" : "Signing up"}
+                </Button>
+              )}
+              {isLogin && (
+                <Button variant="link" onClick={forgetPasswordHandler}>
+                  Forget Password ?
+                </Button>
+              )}
+            </Form>
+          </Card.Body>
+          <Card.Footer>
+            {isLogin ? (
+              <>
+                {sign_up_text}{" "}
+                <Button
+                  variant="link"
+                  style={{ padding: "0", marginBottom: "5px" }}
+                  onClick={switchAuthModeHandler}
+                >
+                  Sign Up
+                </Button>
+              </>
             ) : (
-              <Button variant="success" style={{ marginTop: "15px" }}>
-                <Spinner animation="border" size="sm" />{" "}
-                {isLogin ? "Logging in" : "Signing up"}
-              </Button>
+              <>
+                {login_text}{" "}
+                <Button
+                  variant="link"
+                  style={{ padding: "0", marginBottom: "5px" }}
+                  onClick={switchAuthModeHandler}
+                >
+                  Login
+                </Button>
+              </>
             )}
-            {isLogin && (
-              <Button variant="link" onClick={forgetPasswordHandler}>
-                Forget Password ?
-              </Button>
-            )}
-          </Form>
-        </Card.Body>
-        <Card.Footer>
-          {isLogin ? (
-            <>
-              {sign_up_text}{" "}
-              <Button
-                variant="link"
-                style={{ padding: "0", marginBottom: "5px" }}
-                onClick={switchAuthModeHandler}
-              >
-                Sign Up
-              </Button>
-            </>
-          ) : (
-            <>
-              {login_text}{" "}
-              <Button
-                variant="link"
-                style={{ padding: "0", marginBottom: "5px" }}
-                onClick={switchAuthModeHandler}
-              >
-                Login
-              </Button>
-            </>
-          )}
-        </Card.Footer>
-      </Card>
-    </Container>
+          </Card.Footer>
+        </Card>
+      </Container>
+    </Fragment>
   );
 };
 

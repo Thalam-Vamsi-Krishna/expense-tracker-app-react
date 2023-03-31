@@ -1,26 +1,57 @@
-import { useState, useEffect, useCallback, useContext } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Container, Table, Button, Modal, Form } from "react-bootstrap";
-import AuthContext from "../Store/AuthContext";
+import { expenseActions } from "../Store/ExpenseReducer";
+import { useDispatch, useSelector } from "react-redux";
 
 const ExpenseList = () => {
-  const authCtx = useContext(AuthContext);
-  const [expenses, setExpenses] = useState([]);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [expenseToEdit, setExpenseToEdit] = useState(null);
-  const [expenseToDelete, setExpenseToDelete] = useState(null);
+  const email = useSelector((state) => state.auth.email);
 
-  const email = authCtx.email.replace(/[^a-zA-Z0-9]/g, "");
+  const dispatch = useDispatch();
 
-  const fetchExpenseHandler = useCallback(async () => {
+  const [csvData, setCsvData] = useState("");
+
+  const {
+    expenses,
+    totalAmount,
+    showEditModal,
+    expenseToEdit,
+    showDeleteModal,
+    expenseToDelete,
+  } = useSelector((state) => state.expense);
+
+  const handleEditModalClose = () => {
+    dispatch(expenseActions.setShowEditModal(false));
+    dispatch(expenseActions.setExpenseToEdit(null));
+  };
+
+  const handleEditModalShow = (expense) => {
+    dispatch(expenseActions.setShowEditModal(true));
+    dispatch(expenseActions.setExpenseToEdit(expense));
+  };
+
+  const handleDeleteModalClose = () => {
+    dispatch(expenseActions.setShowDeleteModal(false));
+    dispatch(expenseActions.setExpenseToDelete(null));
+  };
+
+  const handleDeleteModalShow = (expense) => {
+    dispatch(expenseActions.setShowDeleteModal(true));
+    dispatch(expenseActions.setExpenseToDelete(expense));
+  };
+
+  const userEmail = email;
+  const emailId = userEmail.replace(/[^a-zA-Z0-9]/g, "");
+
+  const handleFetchExpenses = useCallback(async () => {
     const response = await fetch(
-      `https://expense-tracker-app-012-default-rtdb.asia-southeast1.firebasedatabase.app/expenses${email}.json`
+      `https://expense-tracker-app-012-default-rtdb.asia-southeast1.firebasedatabase.app/expenses${emailId}.json`
     );
     if (!response.ok) {
       console.log("Failed to fetch expenses");
     }
     const data = await response.json();
     let loadedExpenses = [];
+    let loadedAmount = 0;
     for (const key in data) {
       loadedExpenses.push({
         id: key,
@@ -28,33 +59,11 @@ const ExpenseList = () => {
         amount: data[key].amount,
         desc: data[key].desc,
       });
+      loadedAmount = loadedAmount + parseInt(data[key].amount);
     }
-    setExpenses(loadedExpenses);
+    dispatch(expenseActions.setExpenses(loadedExpenses));
+    dispatch(expenseActions.setTotalAmount(loadedAmount));
   }, []);
-
-  useEffect(() => {
-    fetchExpenseHandler();
-  }, [fetchExpenseHandler]);
-
-  const handleEditModalClose = () => {
-    setShowEditModal(false);
-    setExpenseToEdit(null);
-  };
-
-  const handleEditModalShow = (expense) => {
-    setShowEditModal(true);
-    setExpenseToEdit(expense);
-  };
-
-  const handleDeleteModalClose = () => {
-    setShowDeleteModal(false);
-    setExpenseToDelete(null);
-  };
-
-  const handleDeleteModalShow = (expense) => {
-    setShowDeleteModal(true);
-    setExpenseToDelete(expense);
-  };
 
   const handleEditExpense = async (event) => {
     event.preventDefault();
@@ -65,7 +74,7 @@ const ExpenseList = () => {
       desc: event.target.desc.value,
     };
     const response = await fetch(
-      `https://expense-tracker-app-012-default-rtdb.asia-southeast1.firebasedatabase.app/expenses${email}/${updatedExpense.id}.json`,
+      `https://expense-tracker-app-012-default-rtdb.asia-southeast1.firebasedatabase.app/expenses${emailId}/${updatedExpense.id}.json`,
       {
         method: "PUT",
         body: JSON.stringify(updatedExpense),
@@ -77,13 +86,14 @@ const ExpenseList = () => {
     if (!response.ok) {
       console.log("Failed to update expense");
     }
-    handleEditModalClose();
-    fetchExpenseHandler();
+    dispatch(expenseActions.setExpenseToEdit(null));
+    dispatch(expenseActions.setShowEditModal(false));
+    handleFetchExpenses();
   };
 
   const handleDeleteExpense = async () => {
     const response = await fetch(
-      `https://expense-tracker-app-012-default-rtdb.asia-southeast1.firebasedatabase.app/expenses${email}/${expenseToDelete.id}.json`,
+      `https://expense-tracker-app-012-default-rtdb.asia-southeast1.firebasedatabase.app/expenses${emailId}/${expenseToDelete.id}.json`,
       {
         method: "DELETE",
       }
@@ -91,10 +101,23 @@ const ExpenseList = () => {
     if (!response.ok) {
       console.log("Failed to delete expense");
     }
-    handleDeleteModalClose();
-    fetchExpenseHandler();
+    dispatch(expenseActions.setExpenseToDelete(null));
+    dispatch(expenseActions.setShowDeleteModal(false));
+    handleFetchExpenses();
   };
-
+  useEffect(() => {
+    handleFetchExpenses();
+  }, [handleFetchExpenses]);
+  useEffect(() => {
+    const csv = expenses.reduce((csvString, expense) => {
+      return `${csvString}${expense.title},${expense.amount},${expense.desc}\n`;
+    }, "Title,Amount,Description\n");
+    const totalAmount = expenses.reduce((total, expense) => {
+      return total + parseInt(expense.amount);
+    }, 0);
+    setCsvData(`${csv}Total,${totalAmount},\n`);
+    //setCsvData(csv);
+  }, [expenses]);
   return (
     <Container>
       <h3
@@ -137,6 +160,16 @@ const ExpenseList = () => {
           ))}
         </tbody>
       </Table>
+      <h5>Total Expense Amount : {totalAmount}</h5>
+      <Button
+        className="ml-3"
+        variant="success"
+        href={`data:text/csv;charset=utf-8,${encodeURIComponent(csvData)}`}
+        download="expenses.csv"
+        style={{ marginLeft: "45%" }}
+      >
+        Download Expenses
+      </Button>
       <Modal show={showEditModal} onHide={handleEditModalClose}>
         <Form onSubmit={handleEditExpense}>
           <Modal.Header closeButton>
@@ -194,5 +227,4 @@ const ExpenseList = () => {
     </Container>
   );
 };
-
 export default ExpenseList;

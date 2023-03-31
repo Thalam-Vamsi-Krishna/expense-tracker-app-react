@@ -3,13 +3,16 @@ import ReactDOM from "react-dom";
 import { BrowserRouter } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.css";
 import App from "./App";
-import { AuthContextProvider } from "./components/Store/AuthContext";
+import { Provider } from "react-redux";
+import store from "./components/Store/Store";
+import { ToastContainer } from "react-toastify";
 
 ReactDOM.render(
-  <AuthContextProvider>
+  <Provider store={store}>
+    <ToastContainer />
     <BrowserRouter>
       <App />
     </BrowserRouter>
-  </AuthContextProvider>,
+  </Provider>,
   document.getElementById("root")
 );

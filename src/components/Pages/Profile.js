@@ -1,24 +1,23 @@
-import { Fragment, useContext, useState, useRef, useEffect } from "react";
+import { Fragment, useState, useRef, useEffect } from "react";
 import { Button, Container, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Header from "../Layout/Header";
-import AuthContext from "../Store/AuthContext";
+import { useSelector } from "react-redux";
 
 const Profile = () => {
-  const authCtx = useContext(AuthContext);
+  const token = useSelector((state) => state.auth.idToken);
   const fullNameInputRef = useRef();
   const profileUrlRef = useRef();
   const [fullName, setFullName] = useState("");
   const [profileUrl, setProfileUrl] = useState("");
   const navigate = useNavigate();
-
   useEffect(() => {
     fetch(
       "https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=AIzaSyDvtlwqxzVKhuhWBcSJE6AmKab0x5J45eA",
       {
         method: "POST",
         body: JSON.stringify({
-          idToken: authCtx.token,
+          idToken: token,
         }),
         headers: {
           "Content-Type": "application/json",
@@ -45,10 +44,14 @@ const Profile = () => {
       .catch((err) => {
         alert(err.message);
       });
-  }, []);
+  }, [token]);
 
   const cancelHandler = () => {
     navigate("/home");
+  };
+
+  const navigateHandler = () => {
+    navigate("/verification");
   };
 
   const updateHandler = (event) => {
@@ -60,7 +63,7 @@ const Profile = () => {
       {
         method: "POST",
         body: JSON.stringify({
-          idToken: authCtx.token,
+          idToken: token,
           displayName: enteredFullName,
           photoUrl: enteredProfileUrl,
           returnSecureToken: true,
@@ -104,22 +107,43 @@ const Profile = () => {
   return (
     <Fragment>
       <Header />
-      <Container className="my-5 d-flex justify-content-center">
+      <Button
+        variant="warning"
+        style={{ marginLeft: "45%", marginTop: "5%", color: "white" }}
+        onClick={navigateHandler}
+      >
+        Verify Account
+      </Button>
+      <Button
+        variant="outline-danger"
+        style={{
+          marginLeft: "38%",
+          backgroundColor: "transparent",
+          color: "red",
+        }}
+        onClick={cancelHandler}
+      >
+        Cancel
+      </Button>
+      <Container
+        className="my-5 d-flex justify-content-center"
+        style={{
+          backgroundColor: "pink",
+          paddingTop: "15px",
+          paddingBottom: "15px",
+        }}
+      >
         <Form onSubmit={updateHandler}>
-          <header style={{ marginBottom: "15px" }}>
-            Update Details{" "}
-            <Button
-              variant="outline-danger"
-              style={{
-                marginLeft: "12%",
-                backgroundColor: "transparent",
-                color: "red",
-              }}
-              onClick={cancelHandler}
-            >
-              Cancel
-            </Button>
-          </header>
+          <h4
+            style={{
+              marginBottom: "15px",
+              paddingBottom: "5px",
+              backgroundColor: "white",
+              textAlign: "center",
+            }}
+          >
+            Update Profile
+          </h4>
           <Form.Group controlId="formBasicFullName">
             <Form.Label>Full Name</Form.Label>
             <Form.Control

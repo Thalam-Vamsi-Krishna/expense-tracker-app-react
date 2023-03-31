@@ -1,13 +1,15 @@
-import { useContext, useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Container, Form, Button } from "react-bootstrap";
-import AuthContext from "../Store/AuthContext";
+import { expenseActions } from "../Store/ExpenseReducer";
+import { useDispatch, useSelector } from "react-redux";
 
 const ExpenseForm = () => {
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [desc, setDesc] = useState("");
 
-  const authCtx = useContext(AuthContext);
+  const dispatch = useDispatch();
+  const email = useSelector((state) => state.auth.email);
 
   const titleChangeHandler = (event) => {
     setTitle(event.target.value);
@@ -35,21 +37,22 @@ const ExpenseForm = () => {
     setDesc("");
   };
 
-  const email = authCtx.email.replace(/[^a-zA-Z0-9]/g, "");
+  const userEmail = email;
+  const emailId = userEmail.replace(/[^a-zA-Z0-9]/g, "");
 
   useEffect(() => {
     fetch(
-      `https://expense-tracker-app-012-default-rtdb.asia-southeast1.firebasedatabase.app/expenses${email}.json`,
+      `https://expense-tracker-app-012-default-rtdb.asia-southeast1.firebasedatabase.app/expenses${emailId}.json`,
       {
         method: "POST",
         body: JSON.stringify([]),
       }
     );
-  }, [email]);
+  }, [emailId]);
 
   const addExpenseHandler = async (expenseData) => {
-    const response = fetch(
-      `https://expense-tracker-app-012-default-rtdb.asia-southeast1.firebasedatabase.app/expenses${email}.json`,
+    const response = await fetch(
+      `https://expense-tracker-app-012-default-rtdb.asia-southeast1.firebasedatabase.app/expenses${emailId}.json`,
       {
         method: "POST",
         body: JSON.stringify(expenseData),
@@ -59,9 +62,36 @@ const ExpenseForm = () => {
       }
     );
     if (!response.ok) {
-      throw new Error("Could not add expense.");
+      throw new Error(`${response.statusText}`);
     }
+    fetchExpenseHandler();
   };
+  const fetchExpenseHandler = useCallback(async () => {
+    const response = await fetch(
+      `https://expense-tracker-app-012-default-rtdb.asia-southeast1.firebasedatabase.app/expenses${emailId}.json`
+    );
+    if (!response.ok) {
+      console.log("Failed to fetch expenses");
+    }
+    const data = await response.json();
+    let loadedExpenses = [];
+    let loadedAmount = 0;
+    for (const key in data) {
+      loadedExpenses.push({
+        id: key,
+        title: data[key].title,
+        amount: data[key].amount,
+        desc: data[key].desc,
+      });
+      loadedAmount = loadedAmount + parseInt(data[key].amount);
+    }
+    dispatch(expenseActions.setExpenses(loadedExpenses));
+    dispatch(expenseActions.setTotalAmount(loadedAmount));
+  }, [addExpenseHandler]);
+  useEffect(() => {
+    fetchExpenseHandler();
+  }, [fetchExpenseHandler]);
+
   return (
     <Container>
       <h3
