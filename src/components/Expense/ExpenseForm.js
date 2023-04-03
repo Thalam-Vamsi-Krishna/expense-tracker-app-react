@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Container, Form, Button } from "react-bootstrap";
 import { expenseActions } from "../Store/ExpenseReducer";
 import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
 const ExpenseForm = () => {
   const [title, setTitle] = useState("");
@@ -25,13 +26,24 @@ const ExpenseForm = () => {
 
   const submitHandler = (event) => {
     event.preventDefault();
-
-    const expenseData = {
-      title: title,
-      amount: amount,
-      desc: desc,
-    };
-    addExpenseHandler(expenseData);
+    if (title.length > 0 && amount.length > 0 && desc.length > 0) {
+      const expenseData = {
+        title: title,
+        amount: amount,
+        desc: desc,
+      };
+      addExpenseHandler(expenseData);
+    } else {
+      toast.error("Please enter the input values", {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: true,
+        progress: undefined,
+      });
+    }
     setTitle("");
     setAmount("");
     setDesc("");

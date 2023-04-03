@@ -3,6 +3,7 @@ import { Button, Container, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import Header from "../Layout/Header";
 import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
 const Profile = () => {
   const token = useSelector((state) => state.auth.idToken);
@@ -33,7 +34,15 @@ const Profile = () => {
             if (data && data.error && data.error.message) {
               errorMessage = data.error.message;
             }
-            throw new Error(errorMessage);
+            toast.error(errorMessage, {
+              position: "top-right",
+              autoClose: 2000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: false,
+              draggable: true,
+              progress: undefined,
+            });
           });
         }
       })
@@ -75,6 +84,15 @@ const Profile = () => {
     )
       .then((res) => {
         if (res.ok) {
+          toast.success("Profile Updated Successfully", {
+            position: "top-right",
+            autoClose: 2000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: false,
+            draggable: true,
+            progress: undefined,
+          });
           setFullName(enteredFullName);
           setProfileUrl(enteredProfileUrl);
           return res.json();
@@ -84,7 +102,15 @@ const Profile = () => {
             if (data && data.error && data.error.message) {
               errorMessage = data.error.message;
             }
-            throw new Error(errorMessage);
+            toast.error(errorMessage, {
+              position: "top-right",
+              autoClose: 2000,
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: false,
+              draggable: true,
+              progress: undefined,
+            });
           });
         }
       })

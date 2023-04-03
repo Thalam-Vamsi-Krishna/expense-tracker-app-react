@@ -163,10 +163,10 @@ const ExpenseList = () => {
       <h5>Total Expense Amount : {totalAmount}</h5>
       <Button
         className="ml-3"
-        variant="success"
+        variant="dark"
         href={`data:text/csv;charset=utf-8,${encodeURIComponent(csvData)}`}
         download="expenses.csv"
-        style={{ marginLeft: "45%" }}
+        style={{ marginLeft: "45%", marginBottom: "5%" }}
       >
         Download Expenses
       </Button>
