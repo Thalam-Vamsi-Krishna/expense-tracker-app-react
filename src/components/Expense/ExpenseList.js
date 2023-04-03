@@ -39,7 +39,7 @@ const ExpenseList = () => {
     dispatch(expenseActions.setExpenseToDelete(expense));
   };
 
-  const userEmail = email;
+  const userEmail = email || "";
   const emailId = userEmail.replace(/[^a-zA-Z0-9]/g, "");
 
   const handleFetchExpenses = useCallback(async () => {

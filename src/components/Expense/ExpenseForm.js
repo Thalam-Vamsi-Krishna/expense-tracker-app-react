@@ -49,7 +49,7 @@ const ExpenseForm = () => {
     setDesc("");
   };
 
-  const userEmail = email;
+  const userEmail = email || "";
   const emailId = userEmail.replace(/[^a-zA-Z0-9]/g, "");
 
   useEffect(() => {
